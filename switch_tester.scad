@@ -1,10 +1,10 @@
 // OpenSCAD settings
 subtract_overlap = 1;
-$fn = 100;
+$fn = 50;
 
 // Printer settings
 extrusion_width = 0.4;
-fit_compensation = 0.1;
+fit_compensation = 0.15;
 
 // Switch dimensions
 switch_depth = 13.7; // north-south
@@ -18,7 +18,7 @@ unit = 19;
 ledge_width = 5;
 ledge_depth = 0.8;
 // this is the hight of the plate for plates that are a simple cutout
-ledge_height = 1.4;
+ledge_height = 1.35;
 
 // Edge overshoot dimensions
 edge_overshoot_depth = 0.4;
@@ -36,14 +36,39 @@ label_recess_border = 1;
 
 // switch_plate dimensions
 plate_rows = 1;
-plate_columns = 4;
+plate_columns = 1;
 plate_bottom_thickness = 1.5;
-plate_border_thickness = 3;
+plate_border_thickness = 4;
+plate_chamfer = 2;
+
+// holding notch dimensions
+notch_radius = 1.5;
+notch_angle = 30;
+notch_width = 5;
+notch_height = 0.5;
+notch_groove_width = notch_width + 1;
+notch_groove_height_difference = 0.1;
 
 module copy_mirror(vec=[0,1,0])
 {
     children();
     mirror(vec) children();
+}
+
+module donut(r1, r2) {
+    rotate_extrude()
+    translate([r1-r2,0,0])
+    circle(r2);
+}
+
+module chamfered_cylinder(r, h, r_cham, max_overlap=60) {
+    intersection() {
+        hull() {
+            translate([0,0,h-r_cham]) donut(r, r_cham);
+            translate([0,0,sin(max_overlap)*r_cham]) donut(r, r_cham);
+        };
+        cylinder(h=h+subtract_overlap, r=r+subtract_overlap);
+    }
 }
 
 module switch_cutout() {
@@ -72,30 +97,55 @@ module label_recess() {
     ]);
 }
 
+module notch(width) {
+    copy_mirror([1,0,0])
+    translate([
+        module_hole_width/2+cos(notch_angle)*notch_radius,
+        0,
+        sin(notch_angle)*notch_radius+notch_height
+    ])
+    rotate([90,0,0])
+    cylinder(h=width, r=notch_radius, center=true);
+}
+
 module switch_module() {
     difference() {
         linear_extrude(module_height)
         square(module_width, center=true);
-        #switch_cutout();
-        #label_recess();
+        switch_cutout();
+        label_recess();
+        notch(notch_groove_width);
     }
 }
 
 module plate_hole() {
     translate([rack_wall_thickness/2, rack_wall_thickness/2, 0]) {
-        translate([0, 0, plate_bottom_thickness])
-        cube([module_hole_width, module_hole_width, module_height+subtract_overlap]);
-        translate([0, (module_hole_width-switch_depth)/2, -1*subtract_overlap])
-        cube([module_hole_width, switch_depth, plate_bottom_thickness+2*subtract_overlap]);
+        difference() {
+            union() {
+                translate([0, 0, plate_bottom_thickness])
+                cube([module_hole_width, module_hole_width, module_height+subtract_overlap]);
+                translate([0, (module_hole_width-switch_depth)/2, -1*subtract_overlap])
+                cube([module_hole_width, switch_depth, plate_bottom_thickness+2*subtract_overlap]);
+            };
+            translate([
+                module_hole_width/2,
+                module_hole_width/2,
+                plate_bottom_thickness-notch_groove_height_difference
+            ])
+            notch(notch_width);
+        }
     }
 }
 
 module switch_plate() {
     difference() {
-        linear_extrude(plate_bottom_thickness+module_height)
         minkowski() {
-            square([unit*plate_columns, unit*plate_rows]);
-            circle(plate_border_thickness);
+            cube([unit*plate_columns, unit*plate_rows,1]);
+            chamfered_cylinder(
+                r = plate_border_thickness,
+                h = plate_bottom_thickness+module_height-1,
+                r_cham = plate_chamfer
+            );
         };
         for(i = [0:plate_columns-1], j = [0:plate_rows-1])
         translate([i*unit, j*unit, 0])
@@ -103,6 +153,5 @@ module switch_plate() {
     }
 }
 
-
 switch_plate();
-translate([-30,0,0])switch_module();
+//switch_module();
