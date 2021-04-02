@@ -1,4 +1,6 @@
 // OpenSCAD settings
+develop = true;
+output = "module"; // ["module", "plate"]
 subtract_overlap = 1;
 $fn = 50;
 
@@ -25,7 +27,8 @@ edge_overshoot_depth = 0.4;
 edge_overshoot_width = 1;
 
 // Module dimensions
-module_height = switch_height;
+module_floor_thickness = 1.2;
+module_height = switch_height+module_floor_thickness;
 rack_wall_thickness = 3*extrusion_width;
 module_hole_width = unit-rack_wall_thickness;
 module_width = module_hole_width-fit_compensation;
@@ -72,14 +75,14 @@ module chamfered_cylinder(r, h, r_cham, max_overlap=60) {
 }
 
 module switch_cutout() {
-    translate([0, 0, -1*subtract_overlap]){
-        linear_extrude(module_height+2*subtract_overlap) {
+    translate([0, 0, (sign(module_floor_thickness)-1)*subtract_overlap+module_floor_thickness]){
+        linear_extrude(switch_height+(2-sign(module_floor_thickness))*subtract_overlap) {
             square([switch_width, switch_depth], center=true);
             copy_mirror()
             translate([0, switch_depth/2-edge_overshoot_width/2, 0])
             square([switch_width+2*edge_overshoot_depth, edge_overshoot_width], center=true);
         };
-        linear_extrude(module_height+subtract_overlap-ledge_height)
+        linear_extrude(switch_height+(1-sign(module_floor_thickness))*subtract_overlap-ledge_height)
         square([ledge_width,switch_depth+2*ledge_depth], center=true);
     }
 }
@@ -112,7 +115,7 @@ module switch_module() {
     difference() {
         linear_extrude(module_height)
         square(module_width, center=true);
-        switch_cutout();
+        #switch_cutout();
         label_recess();
         notch(notch_groove_width);
     }
@@ -137,21 +140,25 @@ module plate_hole() {
     }
 }
 
-module switch_plate() {
+module switch_plate(columns, rows) {
     difference() {
         minkowski() {
-            cube([unit*plate_columns, unit*plate_rows,1]);
+            cube([unit*columns, unit*rows,1]);
             chamfered_cylinder(
                 r = plate_border_thickness,
                 h = plate_bottom_thickness+module_height-1,
                 r_cham = plate_chamfer
             );
         };
-        for(i = [0:plate_columns-1], j = [0:plate_rows-1])
+        for(i = [0:columns-1], j = [0:rows-1])
         translate([i*unit, j*unit, 0])
         plate_hole();
     }
 }
 
-switch_plate();
-//switch_module();
+if (develop == true) {
+  translate([5, 5, 0])switch_plate(2,1);
+  translate([-12, 12, 0])switch_module();
+} else
+  if (output == "module") switch_module();
+  else switch_plate(plate_columns, plate_rows);
