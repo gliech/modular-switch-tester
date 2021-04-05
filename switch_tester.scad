@@ -44,14 +44,14 @@ rack_wall_thickness = 1.2;
 module_hole_width = unit-rack_wall_thickness;
 module_width = module_hole_width-module_clearance_gap;
 
-/* [notch] */
-notch_radius = 1.5;
-notch_angle = 30;
-notch_width = 6;
-notch_height = 0.5;
-notch_groove = false;
-notch_groove_width = notch_width + 1;
-notch_groove_height_difference = 0.1;
+/* [bump] */
+bump_radius = 1.5;
+bump_angle = 30;
+bump_width = 6;
+bump_height = 0.5;
+bump_notch = false;
+bump_notch_width = bump_width + 1;
+bump_notch_height_difference = 0.1;
 
 /* [Hidden] */
 subtract_overlap = 1;
@@ -105,16 +105,16 @@ module label_recess() {
     ]);
 }
 
-module notch(width) {
+module bump(width) {
     for(i=[0,180]) {
         rotate([0,0,i])
         translate([
-           module_hole_width/2+cos(notch_angle)*notch_radius,
+           module_hole_width/2+cos(bump_angle)*bump_radius,
            0,
-           sin(notch_angle)*notch_radius+notch_height
+           sin(bump_angle)*bump_radius+bump_height
         ])
         rotate([90,0,0])
-        cylinder(h=width, r=notch_radius, center=true);
+        cylinder(h=width, r=bump_radius, center=true);
     }
 }
 
@@ -124,7 +124,7 @@ module switch_module() {
         square(module_width, center=true);
         switch_cutout();
         label_recess();
-        if (notch_groove) notch(notch_groove_width);
+        if (bump_notch) bump(bump_notch_width);
     }
 }
 
@@ -140,9 +140,9 @@ module plate_hole() {
             translate([
                 module_hole_width/2,
                 module_hole_width/2,
-                plate_bottom_thickness-notch_groove_height_difference
+                plate_bottom_thickness-bump_notch_height_difference
             ])
-            notch(notch_width);
+            bump(bump_width);
         }
     }
 }
