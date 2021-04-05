@@ -1,0 +1,33 @@
+{
+    "parameterSets": {
+        "module": {
+            "output": "module"
+        },
+        "plate1x1": {
+            "output": "plate",
+            "plate_border_thickness": "6",
+            "plate_chamfer_radius": "3"
+        },
+        "plate4x1": {
+            "output": "plate",
+            "plate_columns": "4",
+            "plate_rows": "1"
+        },
+        "plate3x3": {
+            "output": "plate",
+            "plate_columns": "3",
+            "plate_rows": "3"
+        },
+        "plate5x4": {
+            "output": "plate",
+            "plate_columns": "5",
+            "plate_rows": "4"
+        },
+        "plate10x8": {
+            "output": "plate",
+            "plate_columns": "10",
+            "plate_rows": "8"
+        }
+    },
+    "fileFormatVersion": "1"
+}
