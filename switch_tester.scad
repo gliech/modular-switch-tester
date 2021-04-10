@@ -35,9 +35,9 @@ label_recess_border = 1;
 plate_rows = 1;
 plate_columns = 1;
 plate_bottom_thickness = 1;
-plate_border_thickness = 6;
+plate_border_thickness = 3;
 // this can be at most half the border thickness because of how the chamfer is created (could be fixed if needed)
-plate_chamfer_radius = 3;
+plate_chamfer_radius = 1.5;
 plate_chamfer_max_overhang = 60;
 // should be at least twice the extrusion width of your FDM printer
 rack_wall_thickness = 1.2;
@@ -46,7 +46,7 @@ module_width = module_hole_width-module_clearance_gap;
 
 /* [bump] */
 bump_radius = 1.5;
-bump_angle = 30;
+bump_angle = 20;
 bump_width = 6;
 bump_height = 0.5;
 bump_notch = false;
@@ -105,16 +105,24 @@ module label_recess() {
     ]);
 }
 
-module bump(width) {
+module bump(width, reverse = false) {
     for(i=[0,180]) {
         rotate([0,0,i])
         translate([
-           module_hole_width/2+cos(bump_angle)*bump_radius,
+           module_hole_width/2+cos(bump_angle)*bump_radius*(reverse ? -1 : 1),
            0,
-           sin(bump_angle)*bump_radius+bump_height
+           (reverse ? module_height : 0)+(reverse ? -1 : 1)*(sin(bump_angle)*bump_radius+bump_height)
         ])
         rotate([90,0,0])
-        cylinder(h=width, r=bump_radius, center=true);
+        difference(){
+          cylinder(h=width, r=bump_radius, center=true);
+          translate([(1-cos(bump_angle))*bump_radius*(reverse ? -1 : 1)-(reverse ? module_clearance_gap/2 : 0),0,0])
+          cube([
+              2*bump_radius,
+              2*bump_radius+2*subtract_overlap,
+              bump_width+2*subtract_overlap
+          ], center = true);
+        }
     }
 }
 
@@ -125,7 +133,8 @@ module switch_module() {
         switch_cutout();
         label_recess();
         if (bump_notch) bump(bump_notch_width);
-    }
+    };
+    bump(bump_width, true);
 }
 
 module plate_hole() {
@@ -165,7 +174,7 @@ module switch_plate(columns, rows) {
 }
 
 if (output == "develop") {
-    translate([5, 5, 0])switch_plate(2,1);
+    translate([5, 5, 0])switch_plate(3,2);
     translate([-12, 12, 0])switch_module();
 } else if (output == "module") {
     switch_module();
