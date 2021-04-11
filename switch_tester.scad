@@ -19,7 +19,7 @@ module_height = switch_height+module_floor_thickness;
 
 /* [switch module - click ledge] */
 // this is the same as the thickness of your typical keyboard mounting plate
-ledge_thickness = 1.35;
+ledge_thickness = 1.20;
 ledge_width = 5;
 ledge_depth = 0.8;
 
@@ -28,27 +28,29 @@ edge_overshoot_depth = 0.4;
 edge_overshoot_width = 1;
 
 /* [switch module - label recess] */
-label_recess_depth = 0.25;
+label_recess_depth = 0.35;
 label_recess_border = 1;
 
 /* [switch plate] */
 plate_rows = 1;
 plate_columns = 1;
 plate_bottom_thickness = 1;
-plate_border_thickness = 3;
+plate_border_thickness = 5;
 // this can be at most half the border thickness because of how the chamfer is created (could be fixed if needed)
-plate_chamfer_radius = 1.5;
+plate_chamfer_radius = 2.5;
 plate_chamfer_max_overhang = 60;
 // should be at least twice the extrusion width of your FDM printer
 rack_wall_thickness = 1.2;
 module_hole_width = unit-rack_wall_thickness;
 module_width = module_hole_width-module_clearance_gap;
 
-/* [bump] */
+/* [bumps] */
 bump_radius = 1.5;
-bump_angle = 20;
+bump_angle = 19;
 bump_width = 6;
 bump_height = 0.5;
+module_bump_positions = [0,1,3];
+plate_bump_positions = [1,3];
 bump_notch = false;
 bump_notch_width = bump_width + 1;
 bump_notch_height_difference = 0.1;
@@ -105,9 +107,9 @@ module label_recess() {
     ]);
 }
 
-module bump(width, reverse = false) {
-    for(i=[0,180]) {
-        rotate([0,0,i])
+module bump(width, bump_positions, reverse = false) {
+    for(i=bump_positions) {
+        rotate([0,0,90-90*i])
         translate([
            module_hole_width/2+cos(bump_angle)*bump_radius*(reverse ? -1 : 1),
            0,
@@ -132,9 +134,9 @@ module switch_module() {
         square(module_width, center=true);
         switch_cutout();
         label_recess();
-        if (bump_notch) bump(bump_notch_width);
+        if (bump_notch) bump(bump_notch_width, plate_bump_positions);
     };
-    bump(bump_width, true);
+    bump(bump_width, module_bump_positions, reverse=true);
 }
 
 module plate_hole() {
@@ -151,7 +153,7 @@ module plate_hole() {
                 module_hole_width/2,
                 plate_bottom_thickness-bump_notch_height_difference
             ])
-            bump(bump_width);
+            bump(bump_width, plate_bump_positions);
         }
     }
 }
@@ -174,7 +176,7 @@ module switch_plate(columns, rows) {
 }
 
 if (output == "develop") {
-    translate([5, 5, 0])switch_plate(3,2);
+    translate([5, 5, 0])switch_plate(10,4);
     translate([-12, 12, 0])switch_module();
 } else if (output == "module") {
     switch_module();

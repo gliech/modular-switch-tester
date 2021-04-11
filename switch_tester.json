@@ -13,6 +13,11 @@
             "plate_columns": "4",
             "plate_rows": "1"
         },
+        "plate8x1": {
+            "output": "plate",
+            "plate_columns": "8",
+            "plate_rows": "1"
+        },
         "plate3x3": {
             "output": "plate",
             "plate_columns": "3",
