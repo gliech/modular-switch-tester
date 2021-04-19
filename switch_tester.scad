@@ -6,7 +6,7 @@ $fn = output == "develop" ? 20 : 200;
 
 /* [switch module - general] */
 // width of the switch at the height where it sits on the plate
-switch_width = 13.7;
+switch_width = 13.9;
 switch_depth = switch_width;
 // height difference between the top of the plate and the bottom of the contact pin
 switch_height = 8.4;
@@ -19,7 +19,7 @@ module_height = switch_height+module_floor_thickness;
 
 /* [switch module - click ledge] */
 // this is the same as the thickness of your typical keyboard mounting plate
-ledge_thickness = 1.20;
+ledge_thickness = 1.45;
 ledge_width = 5;
 ledge_depth = 0.8;
 
@@ -28,7 +28,7 @@ edge_overshoot_depth = 0.4;
 edge_overshoot_width = 1;
 
 /* [switch module - label recess] */
-label_recess_depth = 0.35;
+label_recess_depth = 0.3;
 label_recess_border = 1;
 
 /* [switch plate] */
@@ -46,7 +46,7 @@ module_width = module_hole_width-module_clearance_gap;
 
 /* [bumps] */
 bump_radius = 1.5;
-bump_angle = 19;
+bump_angle = 19.7;
 bump_width = 6;
 bump_height = 0.5;
 module_bump_positions = [0,1,3];
@@ -178,6 +178,7 @@ module switch_plate(columns, rows) {
 if (output == "develop") {
     translate([5, 5, 0])switch_plate(10,4);
     translate([-12, 12, 0])switch_module();
+    // echo((1-cos(bump_angle))*bump_radius*2);
 } else if (output == "module") {
     switch_module();
 } else {

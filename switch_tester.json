@@ -28,6 +28,11 @@
             "plate_columns": "5",
             "plate_rows": "4"
         },
+        "plate10x4": {
+            "output": "plate",
+            "plate_columns": "10",
+            "plate_rows": "4"
+        },
         "plate10x8": {
             "output": "plate",
             "plate_columns": "10",
