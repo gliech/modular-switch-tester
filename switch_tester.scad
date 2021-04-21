@@ -1,6 +1,6 @@
 /* [general] */
 // generate only the plate, only the module or both
-output = "develop"; // ["develop", "module", "plate"]
+output = "develop"; // ["develop", "module", "plate", "spacer"]
 // use higher setting for fn when models are exportet as stl
 $fn = output == "develop" ? 20 : 200;
 
@@ -51,6 +51,7 @@ bump_width = 6;
 bump_height = 0.5;
 module_bump_positions = [0,1,3];
 plate_bump_positions = [1,3];
+spacer_bump_positions = [0,1,2,3];
 bump_notch = false;
 bump_notch_width = bump_width + 1;
 bump_notch_height_difference = 0.1;
@@ -139,6 +140,15 @@ module switch_module() {
     bump(bump_width, module_bump_positions, reverse=true);
 }
 
+module module_spacer() {
+    difference() {
+        linear_extrude(module_height)
+        square(module_width, center=true);
+        if (bump_notch) bump(bump_notch_width, plate_bump_positions);
+    };
+    bump(bump_width, spacer_bump_positions, reverse=true);
+}
+
 module plate_hole() {
     translate([rack_wall_thickness/2, rack_wall_thickness/2, 0]) {
         difference() {
@@ -181,6 +191,8 @@ if (output == "develop") {
     // echo((1-cos(bump_angle))*bump_radius*2);
 } else if (output == "module") {
     switch_module();
-} else {
+} else if (output == "plate") {
     switch_plate(plate_columns, plate_rows);
+} else if (output == "spacer") {
+    module_spacer();
 }

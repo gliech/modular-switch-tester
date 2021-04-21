@@ -3,6 +3,9 @@
         "module": {
             "output": "module"
         },
+        "spacer": {
+            "output": "spacer"
+        },
         "plate1x1": {
             "output": "plate",
             "plate_border_thickness": "6",
